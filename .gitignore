@@ -1,0 +1,15 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/
+# Chaves e credenciais nunca vão para o repositório
+*.jks
+*.keystore
+*.p12
+signing/
+keystore*.txt
+.git-credentials
