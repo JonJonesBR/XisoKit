@@ -7,10 +7,24 @@
     <string name="folder_subtitle">Transforma a pasta de um jogo de Xbox extraído numa imagem XISO.</string>
     <string name="label_folder">Pasta</string>
     <string name="label_contents">Conteúdo</string>
-    <string name="contents_summary">%1$d arquivos em %2$d pastas · %3$s</string>
+    <plurals name="files_count">
+        <item quantity="one">%1$d arquivo</item>
+        <item quantity="many">%1$d arquivos</item>
+        <item quantity="other">%1$d arquivos</item>
+    </plurals>
+    <plurals name="folders_count">
+        <item quantity="one">%1$d pasta</item>
+        <item quantity="many">%1$d pastas</item>
+        <item quantity="other">%1$d pastas</item>
+    </plurals>
+    <string name="contents_summary">%1$s em %2$s · %3$s</string>
     <string name="label_final_xiso">XISO final</string>
     <string name="approx_size">≈ %1$s</string>
-    <string name="hidden_skipped">%1$d item(ns) oculto(s) ignorado(s).</string>
+    <plurals name="hidden_skipped">
+        <item quantity="one">%1$d item oculto ignorado.</item>
+        <item quantity="many">%1$d itens ocultos ignorados.</item>
+        <item quantity="other">%1$d itens ocultos ignorados.</item>
+    </plurals>
     <string name="no_xbe_folder">Não há default.xbe nesta pasta. Escolha a pasta onde ele está (a raiz do jogo).</string>
     <string name="choose_folder">Escolher pasta</string>
     <string name="change_folder">Trocar pasta</string>
@@ -53,7 +67,11 @@
     <string name="layout_xgd1">Imagem completa do disco (Xbox original, XGD1)</string>
     <string name="layout_xgd2">Imagem completa do disco (XGD2)</string>
     <string name="layout_xgd3">Imagem completa do disco (XGD3)</string>
-    <string name="warnings_count">%1$d aviso(s) de nome de arquivo. Não impedem a criação.</string>
+    <plurals name="warnings_count">
+        <item quantity="one">%1$d aviso de nome de arquivo. Ele não impede a criação.</item>
+        <item quantity="many">%1$d avisos de nome de arquivo. Eles não impedem a criação.</item>
+        <item quantity="other">%1$d avisos de nome de arquivo. Eles não impedem a criação.</item>
+    </plurals>
     <string name="show_warnings">Ver avisos</string>
     <string name="hide_warnings">Ocultar avisos</string>
     <string name="and_more">…e mais %1$d.</string>
@@ -72,9 +90,17 @@
     <string name="tip_takedawn">No Burnout 3, o quadro também diz se a cópia serve para o port Takedawn (só a versão americana original).</string>
     <string name="log_title">Histórico</string>
     <string name="log_subtitle">Últimas operações desta sessão.</string>
-    <string name="contents_title">Conteúdo (%1$d arquivos)</string>
+    <plurals name="contents_title">
+        <item quantity="one">Conteúdo (%1$d arquivo)</item>
+        <item quantity="many">Conteúdo (%1$d arquivos)</item>
+        <item quantity="other">Conteúdo (%1$d arquivos)</item>
+    </plurals>
     <string name="filter_hint">Filtrar por nome</string>
-    <string name="items_count">%1$d item(ns)</string>
+    <plurals name="items_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="many">%1$d itens</item>
+        <item quantity="other">%1$d itens</item>
+    </plurals>
     <string name="share_list">Compartilhar lista</string>
     <string name="share_subject">Conteúdo de %1$s</string>
     <string name="busy_reading_folder">Lendo a pasta…</string>
@@ -88,24 +114,53 @@
     <string name="job_verifying">Verificando a imagem</string>
     <string name="msg_xiso_created">XISO criada: %1$s (%2$s). %3$s</string>
     <string name="msg_xiso_optimized">XISO otimizada criada: %1$s (%2$s). %3$s</string>
-    <string name="check_ok">Conferida: os %1$d arquivos estão na imagem.</string>
-    <string name="check_mismatch">Atenção: esperados %1$d arquivos, encontrados %2$d.</string>
+    <plurals name="check_ok">
+        <item quantity="one">Conferida: %1$d arquivo está na imagem, com o tamanho certo.</item>
+        <item quantity="many">Conferida: os %1$d arquivos estão na imagem, com o tamanho certo.</item>
+        <item quantity="other">Conferida: os %1$d arquivos estão na imagem, com o tamanho certo.</item>
+    </plurals>
+    <plurals name="check_mismatch">
+        <item quantity="one">Atenção: %1$d de %2$d arquivo falta, está com o tamanho errado ou passa do fim da imagem.</item>
+        <item quantity="many">Atenção: %1$d de %2$d arquivos faltam, estão com o tamanho errado ou passam do fim da imagem.</item>
+        <item quantity="other">Atenção: %1$d de %2$d arquivos faltam, estão com o tamanho errado ou passam do fim da imagem.</item>
+    </plurals>
     <string name="check_failed">Não foi possível conferir a imagem: %1$s</string>
-    <string name="msg_extracted">Extraído para a pasta “%1$s”: %2$d arquivos (%3$s).</string>
+    <plurals name="msg_extracted">
+        <item quantity="one">Extraído para a pasta “%1$s”: %2$d arquivo (%3$s).</item>
+        <item quantity="many">Extraído para a pasta “%1$s”: %2$d arquivos (%3$s).</item>
+        <item quantity="other">Extraído para a pasta “%1$s”: %2$d arquivos (%3$s).</item>
+    </plurals>
     <string name="extract_cancelled">Extração cancelada. A pasta “%1$s” ficou incompleta; apague-a.</string>
     <string name="verify_cancelled">Verificação cancelada.</string>
     <string name="op_cancelled">Operação cancelada.</string>
-    <string name="verify_ok">Imagem íntegra: %1$d arquivos (%2$s) lidos sem erro.</string>
-    <string name="verify_problems">Encontrados %1$d problema(s):</string>
+    <plurals name="verify_ok">
+        <item quantity="one">Imagem íntegra: %1$d arquivo (%2$s) lido sem erro.</item>
+        <item quantity="many">Imagem íntegra: %1$d arquivos (%2$s) lidos sem erro.</item>
+        <item quantity="other">Imagem íntegra: %1$d arquivos (%2$s) lidos sem erro.</item>
+    </plurals>
+    <plurals name="verify_problems">
+        <item quantity="one">Encontrado %1$d problema:</item>
+        <item quantity="many">Encontrados %1$d problemas:</item>
+        <item quantity="other">Encontrados %1$d problemas:</item>
+    </plurals>
     <string name="verify_beyond_end">%1$s: passa do fim da imagem (arquivo truncado?)</string>
     <string name="verify_read_error">%1$s: %2$s</string>
-    <string name="log_folder">Pasta “%1$s”: %2$d arquivos, %3$s.</string>
-    <string name="log_image">Imagem “%1$s”: %2$s, %3$d arquivos.</string>
+    <plurals name="log_folder">
+        <item quantity="one">Pasta “%1$s”: %2$d arquivo, %3$s.</item>
+        <item quantity="many">Pasta “%1$s”: %2$d arquivos, %3$s.</item>
+        <item quantity="other">Pasta “%1$s”: %2$d arquivos, %3$s.</item>
+    </plurals>
+    <plurals name="log_image">
+        <item quantity="one">Imagem “%1$s”: %2$s, %3$d arquivo.</item>
+        <item quantity="many">Imagem “%1$s”: %2$s, %3$d arquivos.</item>
+        <item quantity="other">Imagem “%1$s”: %2$s, %3$d arquivos.</item>
+    </plurals>
     <string name="log_done">%1$s: concluído em %2$s.</string>
     <string name="log_error">Erro: %1$s</string>
     <string name="error_generic">Algo deu errado: %1$s</string>
     <string name="need_folder">Escolha a pasta primeiro.</string>
     <string name="need_image">Abra uma imagem primeiro.</string>
+    <string name="need_other_output">Escolha outro arquivo: a imagem de origem não pode ser sobrescrita.</string>
     <string name="problem_not_xbox">Não é uma imagem de Xbox: não há sistema de arquivos XDVDFS. Uma ISO comum (ISO 9660) de PC não serve.</string>
     <string name="problem_corrupt">A imagem está danificada ou truncada (em %1$s).</string>
     <string name="problem_duplicate">%1$s e %2$s têm o mesmo nome para o Xbox, que não diferencia maiúsculas.</string>
@@ -122,4 +177,5 @@
     <string name="problem_cannot_open">Não foi possível abrir o arquivo.</string>
     <string name="problem_cannot_write">Não foi possível gravar no destino escolhido.</string>
     <string name="problem_cannot_create">Não foi possível criar %1$s.</string>
+    <string name="problem_unknown_size">Não foi possível descobrir o tamanho de %1$s.</string>
 </resources>

@@ -4,11 +4,13 @@ import android.app.Application
 import android.content.res.Resources
 import android.net.Uri
 import android.os.SystemClock
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.jonjonesbr.xisokit.core.ImageLayout
 import io.github.jonjonesbr.xisokit.core.Problem
+import io.github.jonjonesbr.xisokit.core.ProblemKind
 import io.github.jonjonesbr.xisokit.core.Takedawn
 import io.github.jonjonesbr.xisokit.core.XbeInfo
 import io.github.jonjonesbr.xisokit.core.XisoEntry
@@ -104,9 +106,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private val res: Resources get() = getApplication<Application>().resources
     private fun str(@StringRes id: Int, vararg args: Any): String = res.getString(id, *args)
+    private fun plural(@PluralsRes id: Int, count: Int, vararg args: Any): String =
+        res.getQuantityString(id, count, *args)
 
     fun cancel() {
         cancelRequested = true
+    }
+
+    override fun onCleared() {
+        // A escrita continua em segundo plano mesmo quando a tela é fechada; isto a interrompe.
+        cancelRequested = true
+        super.onCleared()
     }
 
     fun dismissMessage() = _state.update { it.copy(message = null) }
@@ -115,28 +125,38 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun selectFolder(uri: Uri) = runTask(str(R.string.busy_reading_folder)) {
         val scan = storage.scanFolder(uri) { cancelRequested }
-        folderScan = scan
         var estimated: Long? = null
         var warnings = emptyList<Problem>()
         var errors = emptyList<Problem>()
         try {
-            val plan = XisoWriter.plan(scan.root)
+            val plan = XisoWriter.plan(scan.root) { cancelRequested }
             estimated = plan.imageSize
             warnings = plan.warnings
         } catch (e: XisoException) {
             errors = e.problems
         }
         setBusy(str(R.string.busy_checking_xbe))
-        val xbe = scan.xbeUri?.let { analyzeXbe(storage.openInput(it)) }
+        var xbe: XbeReport? = null
+        scan.xbeUri?.let { xbeUri ->
+            try {
+                xbe = analyzeXbe(storage.openInput(xbeUri)) { cancelRequested }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // O jogo continua utilizável; só não dá para mostrar o cabeçalho.
+                log(str(R.string.log_error, res.errorText(e).lineSequence().first()))
+            }
+        }
+        folderScan = scan
         _state.update {
             it.copy(folder = FolderInfo(scan.name, scan.files, scan.dirs, scan.bytes, estimated, xbe, warnings, errors, scan.skippedHidden))
         }
-        log(str(R.string.log_folder, scan.name, scan.files, formatBytes(scan.bytes)))
+        log(plural(R.plurals.log_folder, scan.files, scan.name, scan.files, formatBytes(scan.bytes)))
     }
 
     fun createFromFolder(output: Uri) = runTask(str(R.string.busy_preparing)) {
         val scan = folderScan ?: throw UserError(str(R.string.need_folder))
-        val plan = XisoWriter.plan(scan.root)
+        val plan = XisoWriter.plan(scan.root) { cancelRequested }
         val name = storage.displayName(output) ?: "image.iso"
         writeImage(plan, output, str(R.string.job_creating, name))
         val check = verifyWritten(output, plan)
@@ -148,14 +168,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun selectImage(uri: Uri) = runTask(str(R.string.busy_reading_image)) {
         storage.openImage(uri).use { src ->
             val img = XisoImage.open(src)
-            val root = img.readTree()
+            val root = img.readTree { cancelRequested }
             val all = XisoImage.flatten(root)
             val files = all.filter { !it.isDirectory }
             val xbeEntry = XisoImage.findInRoot(root, "default.xbe")
             setBusy(str(R.string.busy_checking_xbe))
-            val xbe = xbeEntry?.let { analyzeXbe(img.openFile(it)) }
+            var xbe: XbeReport? = null
+            xbeEntry?.let { entry ->
+                try {
+                    xbe = analyzeXbe(img.openFile(entry)) { cancelRequested }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    log(str(R.string.log_error, res.errorText(e).lineSequence().first()))
+                }
+            }
             val optimized = try {
-                XisoWriter.plan(img.toNode(root)).imageSize
+                val node = img.toNode(root, isCancelled = { cancelRequested })
+                XisoWriter.plan(node, isCancelled = { cancelRequested }).imageSize
             } catch (e: XisoException) {
                 null
             }
@@ -169,15 +199,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                     ),
                 )
             }
-            log(str(R.string.log_image, name, res.layoutText(img.layout), files.size))
+            log(plural(R.plurals.log_image, files.size, name, res.layoutText(img.layout), files.size))
         }
     }
 
     fun convertImage(output: Uri) = runTask(str(R.string.busy_preparing)) {
         val uri = imageUri ?: throw UserError(str(R.string.need_image))
+        if (storage.sameDocument(uri, output)) throw UserError(str(R.string.need_other_output))
         storage.openImage(uri).use { src ->
             val img = XisoImage.open(src)
-            val plan = XisoWriter.plan(img.toNode(img.readTree()))
+            val root = img.readTree { cancelRequested }
+            val plan = XisoWriter.plan(img.toNode(root, isCancelled = { cancelRequested }), isCancelled = { cancelRequested })
             val name = storage.displayName(output) ?: "image.iso"
             writeImage(plan, output, str(R.string.job_generating, name))
             val check = verifyWritten(output, plan)
@@ -189,20 +221,27 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val uri = imageUri ?: throw UserError(str(R.string.need_image))
         storage.openImage(uri).use { src ->
             val img = XisoImage.open(src)
-            val root = img.readTree()
+            val root = img.readTree { cancelRequested }
             val all = XisoImage.flatten(root)
             val fileCount = all.count { !it.isDirectory }
             val total = all.filter { !it.isDirectory }.sumOf { it.size }
             val baseName = (storage.displayName(uri) ?: "game").substringBeforeLast('.').ifEmpty { "game" }
             startJob(str(R.string.job_extracting, baseName), total)
             val target = storage.createDirectory(storage.treeRoot(tree), baseName)
+            val targetName = storage.displayName(target) ?: baseName
             val buf = ByteArray(1 shl 20)
             var done = 0L
-            val cancelText = str(R.string.extract_cancelled, baseName)
+            val cancelText = str(R.string.extract_cancelled, targetName)
 
             fun extractDir(dir: XisoEntry, parent: Uri) {
                 for (entry in dir.children) {
                     if (cancelRequested) throw UserCancel(cancelText)
+                    // Nomes vindos de uma imagem podem ser hostis; não deixa virar caminho no destino.
+                    if (entry.name.isEmpty() || entry.name == "." || entry.name == ".." ||
+                        entry.name.any { it == '/' || it == '\\' || it.code < 0x20 }
+                    ) {
+                        throw XisoException(ProblemKind.INVALID_CHARACTERS, entry.path)
+                    }
                     if (entry.isDirectory) {
                         extractDir(entry, storage.createDirectory(parent, entry.name))
                         continue
@@ -224,7 +263,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
 
             extractDir(root, target)
-            message(str(R.string.msg_extracted, baseName, fileCount, formatBytes(total)), isError = false)
+            message(plural(R.plurals.msg_extracted, fileCount, targetName, fileCount, formatBytes(total)), isError = false)
         }
     }
 
@@ -232,7 +271,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val uri = imageUri ?: throw UserError(str(R.string.need_image))
         storage.openImage(uri).use { src ->
             val img = XisoImage.open(src)
-            val files = XisoImage.flatten(img.readTree()).filter { !it.isDirectory }
+            val files = XisoImage.flatten(img.readTree { cancelRequested }).filter { !it.isDirectory }
             val total = files.sumOf { it.size }
             startJob(str(R.string.job_verifying), total)
             val problems = ArrayList<String>()
@@ -244,6 +283,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 if (!img.isInsideImage(entry)) {
                     problems.add(str(R.string.verify_beyond_end, entry.path))
                     done += entry.size
+                    progress(done, total, entry.path)
                     continue
                 }
                 try {
@@ -261,10 +301,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
             if (problems.isEmpty()) {
-                message(str(R.string.verify_ok, files.size, formatBytes(total)), isError = false)
+                message(plural(R.plurals.verify_ok, files.size, files.size, formatBytes(total)), isError = false)
             } else {
                 val more = if (problems.size > 10) "\n" + str(R.string.and_more, problems.size - 10) else ""
-                message(str(R.string.verify_problems, problems.size) + "\n" + problems.take(10).joinToString("\n") + more, isError = true)
+                message(plural(R.plurals.verify_problems, problems.size, problems.size) + "\n" + problems.take(10).joinToString("\n") + more, isError = true)
             }
         }
     }
@@ -274,7 +314,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val image = _state.value.image ?: return ""
         val sb = StringBuilder()
         sb.append(image.name).append(" — ").append(res.layoutText(image.layout)).append('\n')
-        sb.append(str(R.string.contents_summary, image.files, image.dirs, formatBytes(image.bytes))).append("\n\n")
+        sb.append(
+            str(
+                R.string.contents_summary,
+                plural(R.plurals.files_count, image.files, image.files),
+                plural(R.plurals.folders_count, image.dirs, image.dirs),
+                formatBytes(image.bytes),
+            ),
+        ).append("\n\n")
         for (e in image.entries.take(20_000)) {
             if (e.isDirectory) sb.append(e.path).append("/\n")
             else sb.append(e.path).append("  (").append(e.size).append(" bytes)\n")
@@ -345,16 +392,19 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(job = null, busyText = str(R.string.busy_checking_output)) }
         storage.openImage(uri).use { src ->
             val img = XisoImage.open(src)
-            val n = XisoImage.flatten(img.readTree()).count { !it.isDirectory }
-            if (n == plan.fileCount) str(R.string.check_ok, n)
-            else str(R.string.check_mismatch, plan.fileCount, n)
+            // Confere nome, tamanho e se cada arquivo cabe na imagem, não só a quantidade.
+            val bad = plan.mismatches(img)
+            if (bad.isEmpty()) plural(R.plurals.check_ok, plan.fileCount, plan.fileCount)
+            else plural(R.plurals.check_mismatch, plan.fileCount, bad.size, plan.fileCount)
         }
+    } catch (e: CancellationException) {
+        str(R.string.op_cancelled)
     } catch (e: Exception) {
         str(R.string.check_failed, res.errorText(e))
     }
 
-    private fun analyzeXbe(input: InputStream): XbeReport {
-        val (info, sha) = XbeInfo.analyze(input)
+    private fun analyzeXbe(input: InputStream, isCancelled: () -> Boolean = { false }): XbeReport {
+        val (info, sha) = XbeInfo.analyze(input, isCancelled)
         return XbeReport(info, sha, Takedawn.evaluate(info, sha))
     }
 

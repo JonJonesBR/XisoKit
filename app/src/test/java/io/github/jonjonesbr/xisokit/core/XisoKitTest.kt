@@ -8,6 +8,7 @@ import org.junit.Assert.fail
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.CancellationException
 import kotlin.random.Random
 
 /** Imagem em memória; com offset, simula uma imagem completa do disco sem ocupar memória. */
@@ -132,5 +133,79 @@ class XisoKitTest {
         assertEquals("Burnout 3", info!!.titleName)
         assertEquals("EA-091 (4541005B)", info.titleIdText)
         assertEquals(Takedawn.Status.OTHER_REGION, Takedawn.evaluate(info, sha))
+    }
+
+    @Test
+    fun emptyRootIsAValidImage() {
+        val bytes = build(XisoNode.directory(""))
+        val img = XisoImage.open(MemorySource(bytes))
+        assertTrue(XisoImage.flatten(img.readTree()).isEmpty())
+        assertEquals(0L, bytes.size % Xdvdfs.FILE_MODULUS)
+    }
+
+    @Test
+    fun invalidNamesAreRejected() {
+        val bad = listOf("a/b", "a\\b", ".", "..", "a\u0000b", "a\u0001b")
+        for (name in bad) {
+            val root = XisoNode.directory("")
+            root.children.add(XisoNode.file(name, 1) { ByteArrayInputStream(byteArrayOf(1)) })
+            try {
+                XisoWriter.plan(root)
+                fail("Deveria recusar o nome ${name.replace("\u0000", "\\0")}")
+            } catch (e: XisoException) {
+                assertTrue(e.problems.any { it.kind == ProblemKind.INVALID_CHARACTERS })
+            }
+        }
+    }
+
+    @Test
+    fun writtenImageMatchesPlan() {
+        val tree = sampleTree()
+        val plan = XisoWriter.plan(tree)
+        val out = ByteArrayOutputStream()
+        XisoWriter.write(plan, out) { _, _, _ -> true }
+        val img = XisoImage.open(MemorySource(out.toByteArray()))
+        assertEquals(emptyList<String>(), plan.mismatches(img))
+    }
+
+    @Test
+    fun mismatchesFindWrongFile() {
+        val root = XisoNode.directory("")
+        root.children.add(XisoNode.file("a.bin", 10) { ByteArrayInputStream(ByteArray(10)) })
+        val plan = XisoWriter.plan(root)
+        val other = XisoImage.open(MemorySource(build(sampleTree())))
+        assertTrue(plan.mismatches(other).contains("/a.bin"))
+    }
+
+    @Test
+    fun cancellationStopsPlanningAndReading() {
+        val tree = sampleTree()
+        try {
+            XisoWriter.plan(tree) { true }
+            fail("Deveria cancelar o cálculo")
+        } catch (e: CancellationException) {
+            // esperado
+        }
+        val img = XisoImage.open(MemorySource(build(tree)))
+        try {
+            img.readTree { true }
+            fail("Deveria cancelar a leitura")
+        } catch (e: CancellationException) {
+            // esperado
+        }
+        try {
+            XbeInfo.analyze(ByteArrayInputStream(ByteArray(1024))) { true }
+            fail("Deveria cancelar o hash")
+        } catch (e: CancellationException) {
+            // esperado
+        }
+    }
+
+    @Test
+    fun allFullDiscLayoutsAreDetected() {
+        val bytes = build(sampleTree())
+        for (layout in ImageLayout.values().filter { it != ImageLayout.XISO }) {
+            assertEquals(layout, XisoImage.open(MemorySource(bytes, offset = layout.partitionOffset)).layout)
+        }
     }
 }

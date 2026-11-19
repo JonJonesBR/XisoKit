@@ -16,7 +16,7 @@ XisoKit turns a game folder into an **XISO** image, the format used by emulators
 - 🔍 **View contents**: lists the image's files and folders, with search.
 - ✅ **Verify integrity**: finds truncated or unreadable files.
 - 🎮 **Game details**: name, Title ID, region, version and SHA-256 of `default.xbe`.
-- 🔒 **Automatic check**: after writing, the app confirms every file made it into the image.
+- 🔒 **Automatic check**: after writing, the app confirms every file made it into the image with the right name and size.
 - 🌐 **Three languages**: English, Portuguese and Spanish.
 
 ## Download
@@ -46,3 +46,12 @@ Android does not allow it. Pick the game's subfolder.
 
 **Does the app include games?**
 No. XisoKit neither includes nor downloads games. Use copies of your own discs.
+
+## Building from source
+
+You need JDK 17 and the Android SDK (compileSdk 35).
+
+```sh
+./gradlew :app:testDebugUnitTest   # XISO core tests
+./gradlew :app:assembleDebug      # APK in app/build/outputs/apk/debug/
+```

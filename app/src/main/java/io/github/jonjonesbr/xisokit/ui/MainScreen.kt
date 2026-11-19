@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -241,13 +242,18 @@ private fun FolderCard(folder: FolderInfo?, enabled: Boolean, onPick: () -> Unit
             InfoRow(stringResource(R.string.label_folder), folder.name)
             InfoRow(
                 stringResource(R.string.label_contents),
-                stringResource(R.string.contents_summary, folder.files, folder.dirs, formatBytes(folder.bytes)),
+                stringResource(
+                    R.string.contents_summary,
+                    pluralStringResource(R.plurals.files_count, folder.files, folder.files),
+                    pluralStringResource(R.plurals.folders_count, folder.dirs, folder.dirs),
+                    formatBytes(folder.bytes),
+                ),
             )
             folder.estimatedSize?.let {
                 InfoRow(stringResource(R.string.label_final_xiso), stringResource(R.string.approx_size, formatBytes(it)))
             }
             if (folder.skippedHidden > 0) {
-                Text(stringResource(R.string.hidden_skipped, folder.skippedHidden), style = MaterialTheme.typography.bodySmall)
+                Text(pluralStringResource(R.plurals.hidden_skipped, folder.skippedHidden, folder.skippedHidden), style = MaterialTheme.typography.bodySmall)
             }
             if (folder.errors.isNotEmpty()) ProblemsText(folder.errors, isError = true)
             if (folder.warnings.isNotEmpty()) ProblemsText(folder.warnings, isError = false)
@@ -286,7 +292,12 @@ private fun ImageCard(
             InfoRow(stringResource(R.string.label_size), formatBytes(image.fileSize))
             InfoRow(
                 stringResource(R.string.label_contents),
-                stringResource(R.string.contents_summary, image.files, image.dirs, formatBytes(image.bytes)),
+                stringResource(
+                    R.string.contents_summary,
+                    pluralStringResource(R.plurals.files_count, image.files, image.files),
+                    pluralStringResource(R.plurals.folders_count, image.dirs, image.dirs),
+                    formatBytes(image.bytes),
+                ),
             )
             image.optimizedSize?.let { opt ->
                 val saving = image.fileSize - opt
@@ -369,7 +380,7 @@ private fun ProblemsText(problems: List<Problem>, isError: Boolean) {
     var expanded by remember { mutableStateOf(isError) }
     Column {
         if (isError) ErrorText(stringResource(R.string.cannot_build))
-        else Text(stringResource(R.string.warnings_count, problems.size), style = MaterialTheme.typography.bodySmall)
+        else Text(pluralStringResource(R.plurals.warnings_count, problems.size, problems.size), style = MaterialTheme.typography.bodySmall)
         if (expanded) {
             problems.take(30).forEach {
                 val line = "• " + res.problemText(it)
@@ -466,7 +477,7 @@ private fun ContentsDialog(image: ImageInfo, onDismiss: () -> Unit, onShare: () 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.contents_title, image.files), style = MaterialTheme.typography.titleLarge)
+                Text(pluralStringResource(R.plurals.contents_title, image.files, image.files), style = MaterialTheme.typography.titleLarge)
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
@@ -474,7 +485,7 @@ private fun ContentsDialog(image: ImageInfo, onDismiss: () -> Unit, onShare: () 
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Text(stringResource(R.string.items_count, filtered.size), style = MaterialTheme.typography.bodySmall)
+                Text(pluralStringResource(R.plurals.items_count, filtered.size, filtered.size), style = MaterialTheme.typography.bodySmall)
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp)) {
                     items(filtered) { entry ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {

@@ -84,6 +84,7 @@ enum class ProblemKind {
     CANNOT_OPEN_FILE,
     CANNOT_WRITE_DESTINATION,
     CANNOT_CREATE,
+    UNKNOWN_SIZE,
 }
 
 data class Problem(val kind: ProblemKind, val args: List<String>) {

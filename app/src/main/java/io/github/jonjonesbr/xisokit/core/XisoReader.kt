@@ -2,6 +2,7 @@ package io.github.jonjonesbr.xisokit.core
 
 import io.github.jonjonesbr.xisokit.core.Xdvdfs.SECTOR
 import java.io.InputStream
+import java.util.concurrent.CancellationException
 
 /** Um arquivo ou pasta dentro da imagem. */
 class XisoEntry(
@@ -28,12 +29,13 @@ class XisoImage private constructor(
     fun absolute(sector: Long): Long = partitionOffset + sector * SECTOR
 
     /** Lê toda a árvore de pastas. A raiz devolvida tem path "/". */
-    fun readTree(): XisoEntry {
+    fun readTree(isCancelled: () -> Boolean = { false }): XisoEntry {
         val root = XisoEntry("", "/", true, rootSector, rootSize, Xdvdfs.ATTR_DIR)
         val visited = HashSet<Long>()
         var count = 0
 
         fun walk(dir: XisoEntry, depth: Int) {
+            if (isCancelled()) throw CancellationException("Cancelled")
             if (dir.size == 0L) return
             if (depth > 64) throw XisoException(ProblemKind.CORRUPT_IMAGE, dir.path)
             if (!visited.add(dir.sector)) throw XisoException(ProblemKind.CORRUPT_IMAGE, dir.path)
@@ -48,6 +50,7 @@ class XisoImage private constructor(
             val seen = HashSet<Int>()
             pending.addLast(0)
             while (pending.isNotEmpty()) {
+                if (isCancelled()) throw CancellationException("Cancelled")
                 val off = pending.removeLast()
                 if (!seen.add(off)) throw XisoException(ProblemKind.CORRUPT_IMAGE, dir.path)
                 if (off + Xdvdfs.ENTRY_HEADER > table.size) throw XisoException(ProblemKind.CORRUPT_IMAGE, dir.path)
@@ -83,10 +86,11 @@ class XisoImage private constructor(
     fun isInsideImage(entry: XisoEntry): Boolean = absolute(entry.sector) + entry.size <= source.length
 
     /** Converte a árvore lida em nós prontos para gravar uma nova XISO. */
-    fun toNode(entry: XisoEntry): XisoNode {
+    fun toNode(entry: XisoEntry, isCancelled: () -> Boolean = { false }): XisoNode {
+        if (isCancelled()) throw CancellationException("Cancelled")
         val node = if (entry.isDirectory) XisoNode.directory(entry.name)
         else XisoNode.file(entry.name, entry.size) { openFile(entry) }
-        if (entry.isDirectory) entry.children.forEach { node.children.add(toNode(it)) }
+        if (entry.isDirectory) entry.children.forEach { node.children.add(toNode(it, isCancelled)) }
         return node
     }
 

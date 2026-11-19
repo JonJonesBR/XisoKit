@@ -2,6 +2,7 @@ package io.github.jonjonesbr.xisokit.core
 
 import java.io.InputStream
 import java.security.MessageDigest
+import java.util.concurrent.CancellationException
 
 /** Dados lidos do cabeçalho do executável do Xbox (default.xbe). */
 data class XbeInfo(
@@ -57,13 +58,14 @@ data class XbeInfo(
         }
 
         /** Lê o cabeçalho e calcula o SHA-256 em uma única passada. */
-        fun analyze(input: InputStream): Pair<XbeInfo?, String> {
+        fun analyze(input: InputStream, isCancelled: () -> Boolean = { false }): Pair<XbeInfo?, String> {
             val md = MessageDigest.getInstance("SHA-256")
             val head = ByteArray(64 * 1024)
             var headLen = 0
             val buf = ByteArray(256 * 1024)
             input.use {
                 while (true) {
+                    if (isCancelled()) throw CancellationException("Cancelled")
                     val n = it.read(buf)
                     if (n < 0) break
                     md.update(buf, 0, n)

@@ -29,6 +29,7 @@ fun Resources.problemText(p: Problem): String {
         ProblemKind.CANNOT_OPEN_FILE -> getString(R.string.problem_cannot_open)
         ProblemKind.CANNOT_WRITE_DESTINATION -> getString(R.string.problem_cannot_write)
         ProblemKind.CANNOT_CREATE -> getString(R.string.problem_cannot_create, arg(0))
+        ProblemKind.UNKNOWN_SIZE -> getString(R.string.problem_unknown_size, arg(0))
     }
 }
 

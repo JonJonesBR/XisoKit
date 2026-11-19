@@ -16,7 +16,7 @@ XisoKit convierte la carpeta de un juego en una imagen **XISO**, el formato que 
 - 🔍 **Ver contenido**: lista los archivos y carpetas de la imagen, con búsqueda por nombre.
 - ✅ **Verificar integridad**: encuentra archivos truncados o ilegibles.
 - 🎮 **Información del juego**: nombre, Title ID, región, versión y SHA-256 del `default.xbe`.
-- 🔒 **Comprobación automática**: después de grabar, la app confirma que todos los archivos estén en la imagen.
+- 🔒 **Comprobación automática**: después de grabar, la app confirma que todos los archivos estén en la imagen, con el nombre y el tamaño correctos.
 - 🌐 **Tres idiomas**: español, portugués e inglés.
 
 ## Descarga
@@ -46,3 +46,12 @@ Es una restricción de Android. Elige la subcarpeta del juego.
 
 **¿La app incluye juegos?**
 No. XisoKit no incluye ni descarga juegos. Usa copias de tus propios discos.
+
+## Compilar desde el código
+
+Necesitas JDK 17 y el SDK de Android (compileSdk 35).
+
+```sh
+./gradlew :app:testDebugUnitTest   # pruebas del núcleo XISO
+./gradlew :app:assembleDebug      # APK en app/build/outputs/apk/debug/
+```

@@ -8,10 +8,21 @@
     <string name="folder_subtitle">Turns the folder of an extracted Xbox game into an XISO image.</string>
     <string name="label_folder">Folder</string>
     <string name="label_contents">Contents</string>
-    <string name="contents_summary">%1$d files in %2$d folders · %3$s</string>
+    <plurals name="files_count">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+    <plurals name="folders_count">
+        <item quantity="one">%1$d folder</item>
+        <item quantity="other">%1$d folders</item>
+    </plurals>
+    <string name="contents_summary">%1$s in %2$s · %3$s</string>
     <string name="label_final_xiso">Final XISO</string>
     <string name="approx_size">≈ %1$s</string>
-    <string name="hidden_skipped">%1$d hidden item(s) skipped.</string>
+    <plurals name="hidden_skipped">
+        <item quantity="one">%1$d hidden item skipped.</item>
+        <item quantity="other">%1$d hidden items skipped.</item>
+    </plurals>
     <string name="no_xbe_folder">There is no default.xbe in this folder. Pick the folder that contains it (the game’s root).</string>
     <string name="choose_folder">Choose folder</string>
     <string name="change_folder">Change folder</string>
@@ -54,7 +65,10 @@
     <string name="layout_xgd1">Full disc image (original Xbox, XGD1)</string>
     <string name="layout_xgd2">Full disc image (XGD2)</string>
     <string name="layout_xgd3">Full disc image (XGD3)</string>
-    <string name="warnings_count">%1$d file name warning(s). They do not block creation.</string>
+    <plurals name="warnings_count">
+        <item quantity="one">%1$d file name warning. It does not block creation.</item>
+        <item quantity="other">%1$d file name warnings. They do not block creation.</item>
+    </plurals>
     <string name="show_warnings">Show warnings</string>
     <string name="hide_warnings">Hide warnings</string>
     <string name="and_more">…and %1$d more.</string>
@@ -73,9 +87,15 @@
     <string name="tip_takedawn">For Burnout 3, the panel also tells whether the copy works with the Takedawn port (original US version only).</string>
     <string name="log_title">History</string>
     <string name="log_subtitle">Latest operations in this session.</string>
-    <string name="contents_title">Contents (%1$d files)</string>
+    <plurals name="contents_title">
+        <item quantity="one">Contents (%1$d file)</item>
+        <item quantity="other">Contents (%1$d files)</item>
+    </plurals>
     <string name="filter_hint">Filter by name</string>
-    <string name="items_count">%1$d item(s)</string>
+    <plurals name="items_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
     <string name="share_list">Share list</string>
     <string name="share_subject">Contents of %1$s</string>
     <string name="busy_reading_folder">Reading the folder…</string>
@@ -89,24 +109,46 @@
     <string name="job_verifying">Verifying the image</string>
     <string name="msg_xiso_created">XISO created: %1$s (%2$s). %3$s</string>
     <string name="msg_xiso_optimized">Optimized XISO created: %1$s (%2$s). %3$s</string>
-    <string name="check_ok">Checked: all %1$d files are in the image.</string>
-    <string name="check_mismatch">Warning: expected %1$d files, found %2$d.</string>
+    <plurals name="check_ok">
+        <item quantity="one">Checked: %1$d file is in the image, with the right size.</item>
+        <item quantity="other">Checked: all %1$d files are in the image, with the right size.</item>
+    </plurals>
+    <plurals name="check_mismatch">
+        <item quantity="one">Warning: %1$d of %2$d file is missing, has the wrong size or goes past the end of the image.</item>
+        <item quantity="other">Warning: %1$d of %2$d files are missing, have the wrong size or go past the end of the image.</item>
+    </plurals>
     <string name="check_failed">Could not check the image: %1$s</string>
-    <string name="msg_extracted">Extracted to the folder “%1$s”: %2$d files (%3$s).</string>
+    <plurals name="msg_extracted">
+        <item quantity="one">Extracted to the folder “%1$s”: %2$d file (%3$s).</item>
+        <item quantity="other">Extracted to the folder “%1$s”: %2$d files (%3$s).</item>
+    </plurals>
     <string name="extract_cancelled">Extraction cancelled. The folder “%1$s” is incomplete; delete it.</string>
     <string name="verify_cancelled">Verification cancelled.</string>
     <string name="op_cancelled">Operation cancelled.</string>
-    <string name="verify_ok">Image is intact: %1$d files (%2$s) read without errors.</string>
-    <string name="verify_problems">Found %1$d problem(s):</string>
+    <plurals name="verify_ok">
+        <item quantity="one">Image is intact: %1$d file (%2$s) read without errors.</item>
+        <item quantity="other">Image is intact: %1$d files (%2$s) read without errors.</item>
+    </plurals>
+    <plurals name="verify_problems">
+        <item quantity="one">Found %1$d problem:</item>
+        <item quantity="other">Found %1$d problems:</item>
+    </plurals>
     <string name="verify_beyond_end">%1$s: goes past the end of the image (truncated file?)</string>
     <string name="verify_read_error">%1$s: %2$s</string>
-    <string name="log_folder">Folder “%1$s”: %2$d files, %3$s.</string>
-    <string name="log_image">Image “%1$s”: %2$s, %3$d files.</string>
+    <plurals name="log_folder">
+        <item quantity="one">Folder “%1$s”: %2$d file, %3$s.</item>
+        <item quantity="other">Folder “%1$s”: %2$d files, %3$s.</item>
+    </plurals>
+    <plurals name="log_image">
+        <item quantity="one">Image “%1$s”: %2$s, %3$d file.</item>
+        <item quantity="other">Image “%1$s”: %2$s, %3$d files.</item>
+    </plurals>
     <string name="log_done">%1$s: finished in %2$s.</string>
     <string name="log_error">Error: %1$s</string>
     <string name="error_generic">Something went wrong: %1$s</string>
     <string name="need_folder">Choose the folder first.</string>
     <string name="need_image">Open an image first.</string>
+    <string name="need_other_output">Choose a different file: the source image cannot be overwritten.</string>
     <string name="problem_not_xbox">This is not an Xbox image: it has no XDVDFS file system. A regular PC ISO (ISO 9660) does not work.</string>
     <string name="problem_corrupt">The image is damaged or truncated (in %1$s).</string>
     <string name="problem_duplicate">%1$s and %2$s have the same name for the Xbox, which ignores upper and lower case.</string>
@@ -123,4 +165,5 @@
     <string name="problem_cannot_open">Could not open the file.</string>
     <string name="problem_cannot_write">Could not write to the chosen destination.</string>
     <string name="problem_cannot_create">Could not create %1$s.</string>
+    <string name="problem_unknown_size">Could not find out the size of %1$s.</string>
 </resources>

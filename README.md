@@ -16,7 +16,7 @@ O XisoKit transforma a pasta de um jogo numa imagem **XISO**, o formato usado po
 - 🔍 **Ver conteúdo**: lista arquivos e pastas da imagem, com busca por nome.
 - ✅ **Verificar integridade**: encontra arquivos truncados ou ilegíveis.
 - 🎮 **Informações do jogo**: nome, Title ID, região, versão e SHA-256 do `default.xbe`.
-- 🔒 **Conferência automática**: depois de gravar, o app confere se todos os arquivos estão na imagem.
+- 🔒 **Conferência automática**: depois de gravar, o app confere se todos os arquivos estão na imagem, com o nome e o tamanho certos.
 - 🌐 **Três idiomas**: português, inglês e espanhol.
 
 ## Download
@@ -46,3 +46,12 @@ Sim, com qualquer jogo do Xbox original. Para o Burnout 3, o app também avisa s
 
 **O app vem com jogos?**
 Não. O XisoKit não inclui nem baixa jogos. Use cópias dos seus próprios discos.
+
+## Compilar do código
+
+Precisa de JDK 17 e do Android SDK (compileSdk 35).
+
+```sh
+./gradlew :app:testDebugUnitTest   # testes do núcleo XISO
+./gradlew :app:assembleDebug      # APK em app/build/outputs/apk/debug/
+```

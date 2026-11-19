@@ -2,6 +2,7 @@ package io.github.jonjonesbr.xisokit.storage
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
 import android.provider.OpenableColumns
@@ -10,8 +11,6 @@ import io.github.jonjonesbr.xisokit.core.ImageSource
 import io.github.jonjonesbr.xisokit.core.ProblemKind
 import io.github.jonjonesbr.xisokit.core.XisoException
 import io.github.jonjonesbr.xisokit.core.XisoNode
-import java.io.Closeable
-import java.io.FileInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.CancellationException
@@ -48,6 +47,7 @@ class SafStorage(private val resolver: ContentResolver) {
             val subdirs = ArrayList<Pair<String, XisoNode>>()
             cursor.use { c ->
                 while (c.moveToNext()) {
+                    if (isCancelled()) throw CancellationException("Cancelled")
                     val id = c.getString(0) ?: continue
                     val childName = c.getString(1) ?: continue
                     if (childName.startsWith(".")) {
@@ -61,11 +61,14 @@ class SafStorage(private val resolver: ContentResolver) {
                         subdirs.add(id to dir)
                         dirs++
                     } else {
-                        val size = if (c.isNull(3)) 0L else c.getLong(3)
                         val uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, id)
-                        node.children.add(XisoNode.file(childName, size) { openInput(uri) })
+                        // Alguns provedores não informam o tamanho; sem ele o arquivo sairia vazio.
+                        val size = if (!c.isNull(3)) c.getLong(3) else -1L
+                        val realSize = if (size >= 0) size else lengthOf(uri)
+                        if (realSize < 0) throw XisoException(ProblemKind.UNKNOWN_SIZE, childName)
+                        node.children.add(XisoNode.file(childName, realSize) { openInput(uri) })
                         files++
-                        bytes += size
+                        bytes += realSize
                         if (depth == 0 && childName.equals("default.xbe", ignoreCase = true)) xbe = uri
                     }
                 }
@@ -92,11 +95,32 @@ class SafStorage(private val resolver: ContentResolver) {
 
     fun openImage(uri: Uri): ImageSource {
         val pfd = resolver.openFileDescriptor(uri, "r") ?: throw XisoException(ProblemKind.CANNOT_OPEN_FILE)
-        val fis = FileInputStream(pfd.fileDescriptor)
-        return ChannelImageSource(fis.channel, Closeable {
-            fis.close()
-            pfd.close()
-        })
+        // AutoCloseInputStream fecha o descritor uma única vez, junto com o stream.
+        val stream = ParcelFileDescriptor.AutoCloseInputStream(pfd)
+        return ChannelImageSource(stream.channel, stream)
+    }
+
+    /** Tamanho informado pelo provedor, ou -1 quando ele não sabe. */
+    private fun lengthOf(uri: Uri): Long {
+        try {
+            resolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
+                if (afd.length >= 0) return afd.length
+            }
+        } catch (e: Exception) {
+            // Tenta pelo descritor abaixo.
+        }
+        return try {
+            resolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: -1L
+        } catch (e: Exception) {
+            -1L
+        }
+    }
+
+    /** Diz se duas URIs apontam para o mesmo documento (o seletor pode devolver URIs diferentes). */
+    fun sameDocument(a: Uri, b: Uri): Boolean = try {
+        a.authority == b.authority && DocumentsContract.getDocumentId(a) == DocumentsContract.getDocumentId(b)
+    } catch (e: Exception) {
+        a == b
     }
 
     fun displayName(uri: Uri): String? = try {

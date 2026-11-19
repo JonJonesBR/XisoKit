@@ -32,6 +32,41 @@ class XisoPlan internal constructor(
     val warnings: List<Problem>,
 ) {
     val imageSize: Long get() = totalSectors * SECTOR
+
+    /** Arquivos que a imagem gravada deve ter: caminho ("/pasta/arquivo") para tamanho. */
+    internal fun expectedFiles(): Map<String, Long> {
+        val out = LinkedHashMap<String, Long>()
+        fun rec(dir: PlanDir) {
+            for (e in dir.preorder) {
+                if (e.node.isDirectory) rec(e.dir!!) else out[e.path] = e.node.size
+            }
+        }
+        rec(root)
+        return out
+    }
+
+    /** Compara a imagem recém-gravada com o plano e devolve os caminhos errados. */
+    fun mismatches(image: XisoImage): List<String> {
+        val expected = expectedFiles()
+        val bad = LinkedHashSet<String>()
+        val seen = HashSet<String>()
+
+        fun rec(dir: XisoEntry) {
+            for (e in dir.children) {
+                if (e.isDirectory) {
+                    rec(e)
+                } else {
+                    val size = expected[e.path]
+                    if (size == null || size != e.size || !image.isInsideImage(e)) bad.add(e.path)
+                    seen.add(e.path)
+                }
+            }
+        }
+
+        rec(image.readTree())
+        for (path in expected.keys) if (path !in seen) bad.add(path)
+        return bad.toList()
+    }
 }
 
 internal class PlanEntry(val node: XisoNode, val nameBytes: ByteArray, val path: String) {
@@ -59,7 +94,7 @@ object XisoWriter {
     }
 
     /** Calcula o layout. Lança XisoException se algo impede a gravação. */
-    fun plan(root: XisoNode): XisoPlan {
+    fun plan(root: XisoNode, isCancelled: () -> Boolean = { false }): XisoPlan {
         val warnings = ArrayList<Problem>()
         val errors = ArrayList<Problem>()
         var files = 0
@@ -67,8 +102,10 @@ object XisoWriter {
         var bytes = 0L
 
         fun buildDir(node: XisoNode, path: String): PlanDir {
+            if (isCancelled()) throw CancellationException("Cancelled")
             val entries = ArrayList<PlanEntry>()
             for (child in node.children) {
+                if (isCancelled()) throw CancellationException("Cancelled")
                 val childPath = if (path.isEmpty()) "/${child.name}" else "$path/${child.name}"
                 val nameBytes = encodeName(child.name, childPath, warnings, errors) ?: continue
                 if (!child.isDirectory && child.size > Xdvdfs.MAX_FILE_SIZE) {
@@ -170,20 +207,20 @@ object XisoWriter {
                 expect(out, e.sector)
                 check(e.path)
                 var left = e.node.size
-                if (left > 0) {
-                    e.node.open!!.invoke().use { input ->
-                        while (left > 0) {
-                            val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
-                            if (n < 0) throw XisoException(ProblemKind.FILE_CHANGED, e.path)
-                            out.write(buf, 0, n)
-                            left -= n
-                            done += n
-                            check(e.path)
-                        }
+                e.node.open!!.invoke().use { input ->
+                    while (left > 0) {
+                        val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
+                        if (n <= 0) throw XisoException(ProblemKind.FILE_CHANGED, e.path)
+                        out.write(buf, 0, n)
+                        left -= n
+                        done += n
+                        check(e.path)
                     }
+                    // Se o arquivo cresceu depois do scan, o plano ficaria com o tamanho antigo.
+                    if (input.read() >= 0) throw XisoException(ProblemKind.FILE_CHANGED, e.path)
                 }
                 val pad = Xdvdfs.alignSector(e.node.size) - e.node.size
-                out.fill(pad, Xdvdfs.PAD)
+                out.fill(pad)
             }
             for (e in dir.preorder) if (e.node.isDirectory) writeDir(e.dir!!)
         }
@@ -201,6 +238,10 @@ object XisoWriter {
     private fun encodeName(name: String, path: String, warnings: MutableList<Problem>, errors: MutableList<Problem>): ByteArray? {
         if (name.isEmpty()) {
             errors.add(problem(ProblemKind.EMPTY_NAME, path)); return null
+        }
+        // O mesmo que o extract-xiso recusa: separadores, "." e ".." e caracteres de controle.
+        if (name == "." || name == ".." || name.any { it == '/' || it == '\\' || it.code < 0x20 }) {
+            errors.add(problem(ProblemKind.INVALID_CHARACTERS, path)); return null
         }
         val encoder = Charsets.ISO_8859_1.newEncoder()
             .onMalformedInput(CodingErrorAction.REPORT)
@@ -289,7 +330,7 @@ object XisoWriter {
             }
         }
 
-        fun fill(n: Long, @Suppress("UNUSED_PARAMETER") value: Byte) {
+        fun fill(n: Long) {
             var left = n
             while (left > 0) {
                 val k = minOf(left, pad.size.toLong()).toInt()
