@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- O Gradle 9.7.0 é o par validado do AGP 9.3.3. Não subimos o wrapper só
+         porque existe versão mais nova; a troca é feita junto com o AGP. -->
+    <issue id="AndroidGradlePluginVersion">
+        <ignore path="gradle/wrapper/gradle-wrapper.properties" />
+    </issue>
+</lint>

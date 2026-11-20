@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -288,7 +289,7 @@ private fun ImageCard(
     onConvert: (String) -> Unit,
     onVerify: () -> Unit,
 ) {
-    val res = LocalContext.current.resources
+    val res = LocalResources.current
     SectionCard(stringResource(R.string.image_title), stringResource(R.string.image_subtitle)) {
         if (image != null) {
             InfoRow(stringResource(R.string.label_file), image.name)
@@ -335,7 +336,7 @@ private fun ImageCard(
 @Composable
 private fun XbeBlock(report: XbeReport) {
     val context = LocalContext.current
-    val res = context.resources
+    val res = LocalResources.current
     val colors = MaterialTheme.colorScheme
     val info = report.info
     // O veredito do Takedawn só aparece quando o jogo é o Burnout 3.
@@ -384,7 +385,7 @@ private fun ErrorText(text: String) {
 
 @Composable
 private fun ProblemsText(problems: List<Problem>, isError: Boolean) {
-    val res = LocalContext.current.resources
+    val res = LocalResources.current
     var expanded by remember { mutableStateOf(isError) }
     Column {
         if (isError) ErrorText(stringResource(R.string.cannot_build))

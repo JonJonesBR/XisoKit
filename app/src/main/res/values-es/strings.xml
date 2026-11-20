@@ -64,7 +64,8 @@
     <string name="region_debug">Debug/fabricación</string>
     <string name="region_unknown">Desconocida (%1$s)</string>
     <string name="layout_xiso">XISO (optimizada)</string>
-    <string name="layout_xgd1">Imagen completa del disco (Xbox original, XGD1)</string>
+    <!-- XGD1 é o nome do formato; o corretor acha que é erro de digitação. -->
+    <string name="layout_xgd1" tools:ignore="Typos">Imagen completa del disco (Xbox original, XGD1)</string>
     <string name="layout_xgd2">Imagen completa del disco (XGD2)</string>
     <string name="layout_xgd3">Imagen completa del disco (XGD3)</string>
     <plurals name="warnings_count">
