@@ -49,7 +49,7 @@ No. XisoKit no incluye ni descarga juegos. Usa copias de tus propios discos.
 
 ## Compilar desde el código
 
-Necesitas JDK 17 y el SDK de Android (compileSdk 35).
+Necesitas JDK 17 y el SDK de Android (compileSdk 37.1).
 
 ```sh
 ./gradlew :app:testDebugUnitTest   # pruebas del núcleo XISO

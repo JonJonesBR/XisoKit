@@ -1,6 +1,8 @@
 package io.github.jonjonesbr.xisokit.ui
 
 import android.app.LocaleManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -48,12 +50,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -330,8 +330,8 @@ private fun ImageCard(
 
 @Composable
 private fun XbeBlock(report: XbeReport) {
-    val clipboard = LocalClipboardManager.current
-    val res = LocalContext.current.resources
+    val context = LocalContext.current
+    val res = context.resources
     val colors = MaterialTheme.colorScheme
     val info = report.info
     // O veredito do Takedawn só aparece quando o jogo é o Burnout 3.
@@ -358,7 +358,11 @@ private fun XbeBlock(report: XbeReport) {
             SelectionContainer {
                 Text(report.sha256, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
             }
-            TextButton(onClick = { clipboard.setText(AnnotatedString(report.sha256)) }) {
+            TextButton(onClick = {
+                // Retorno imediato: no Android 13+ o sistema mostra a confirmação de cópia.
+                context.getSystemService(ClipboardManager::class.java)
+                    ?.setPrimaryClip(ClipData.newPlainText("SHA-256", report.sha256))
+            }) {
                 Text(stringResource(R.string.copy_sha))
             }
             if (isBurnout3) {

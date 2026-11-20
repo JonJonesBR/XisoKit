@@ -1,19 +1,20 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    // O Kotlin em si vem embutido no AGP 9; aqui só entra o compilador do Compose.
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "io.github.jonjonesbr.xisokit"
-    compileSdk = 35
+    compileSdk = 37
+    compileSdkMinor = 1
 
     defaultConfig {
         applicationId = "io.github.jonjonesbr.xisokit"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 4
-        versionName = "1.2.1"
+        targetSdk = 36
+        versionCode = 6
+        versionName = "1.3.0"
     }
 
     // A chave de assinatura NUNCA fica no repositório. No GitHub ela vem dos Secrets;
@@ -32,7 +33,14 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 encolhe e ofusca o APK. O app não usa reflexão, então as regras
+            // padrão bastam; as do Compose vêm nos próprios artefatos.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             signingConfig = signingConfigs.getByName(if (releaseStoreFile != null) "release" else "debug")
         }
     }
@@ -40,9 +48,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -54,15 +59,15 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.11.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     testImplementation("junit:junit:4.13.2")
 }

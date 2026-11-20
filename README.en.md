@@ -49,7 +49,7 @@ No. XisoKit neither includes nor downloads games. Use copies of your own discs.
 
 ## Building from source
 
-You need JDK 17 and the Android SDK (compileSdk 35).
+You need JDK 17 and the Android SDK (compileSdk 37.1).
 
 ```sh
 ./gradlew :app:testDebugUnitTest   # XISO core tests

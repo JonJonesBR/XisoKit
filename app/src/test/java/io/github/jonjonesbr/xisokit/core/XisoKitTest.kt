@@ -169,8 +169,33 @@ class XisoKitTest {
     }
 
     @Test
-    fun mismatchesFindWrongFile() {
+    fun truncatedSourceIsRejected() {
         val root = XisoNode.directory("")
+        root.children.add(XisoNode.file("curto.bin", 100) { ByteArrayInputStream(ByteArray(50)) })
+        val plan = XisoWriter.plan(root)
+        try {
+            XisoWriter.write(plan, ByteArrayOutputStream()) { _, _, _ -> true }
+            fail("Deveria recusar arquivo menor que o plano")
+        } catch (e: XisoException) {
+            assertTrue(e.problems.any { it.kind == ProblemKind.FILE_CHANGED && it.args == listOf("/curto.bin") })
+        }
+    }
+
+    @Test
+    fun grownSourceIsRejected() {
+        val root = XisoNode.directory("")
+        root.children.add(XisoNode.file("longo.bin", 50) { ByteArrayInputStream(ByteArray(100)) })
+        val plan = XisoWriter.plan(root)
+        try {
+            XisoWriter.write(plan, ByteArrayOutputStream()) { _, _, _ -> true }
+            fail("Deveria recusar arquivo maior que o plano")
+        } catch (e: XisoException) {
+            assertTrue(e.problems.any { it.kind == ProblemKind.FILE_CHANGED && it.args == listOf("/longo.bin") })
+        }
+    }
+
+    @Test
+    fun mismatchesFindWrongFile() {        val root = XisoNode.directory("")
         root.children.add(XisoNode.file("a.bin", 10) { ByteArrayInputStream(ByteArray(10)) })
         val plan = XisoWriter.plan(root)
         val other = XisoImage.open(MemorySource(build(sampleTree())))

@@ -28,6 +28,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
+      # A plataforma 37.1 pode não vir na imagem do runner; o AGP não baixa sozinho.
+      - name: Instalar plataforma 37.1
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-37.1"
+
       - name: Testes do núcleo XISO
         run: ./gradlew --no-daemon :app:testDebugUnitTest
 
