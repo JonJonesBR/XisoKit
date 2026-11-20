@@ -31,8 +31,9 @@ jobs:
       # A plataforma 37.1 pode não vir na imagem do runner; o AGP não baixa sozinho.
       - name: Instalar plataforma 37.1
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-37.1"
+          SDKMANAGER="${ANDROID_HOME:-$ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" "platforms;android-37.1"
 
       - name: Testes do núcleo XISO
         run: ./gradlew --no-daemon :app:testDebugUnitTest
