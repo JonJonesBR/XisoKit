@@ -44,6 +44,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +68,9 @@ import io.github.jonjonesbr.xisokit.R
 import io.github.jonjonesbr.xisokit.UserMessage
 import io.github.jonjonesbr.xisokit.XbeReport
 import io.github.jonjonesbr.xisokit.core.Problem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import io.github.jonjonesbr.xisokit.core.Takedawn
 import io.github.jonjonesbr.xisokit.storage.SafStorage
 
@@ -474,9 +478,15 @@ private fun LogCard(log: List<String>) {
 @Composable
 private fun ContentsDialog(image: ImageInfo, onDismiss: () -> Unit, onShare: () -> Unit) {
     var query by remember { mutableStateOf("") }
-    val filtered = remember(query, image) {
-        if (query.isBlank()) image.entries
-        else image.entries.filter { it.path.contains(query.trim(), ignoreCase = true) }
+    var filtered by remember(image) { mutableStateOf(image.entries) }
+    LaunchedEffect(query, image) {
+        // Espera o usuário parar de digitar: filtrar milhares de nomes não pode travar a tela.
+        delay(150)
+        filtered = withContext(Dispatchers.Default) {
+            val q = query.trim()
+            if (q.isEmpty()) image.entries
+            else image.entries.filter { it.path.contains(q, ignoreCase = true) }
+        }
     }
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {

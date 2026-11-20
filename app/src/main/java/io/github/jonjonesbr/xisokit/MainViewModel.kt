@@ -262,7 +262,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
 
-            extractDir(root, target)
+            try {
+                extractDir(root, target)
+            } catch (e: Throwable) {
+                // Cancelou ou falhou no meio: não deixa uma pasta pela metade no destino.
+                val removed = storage.delete(target)
+                if (e is UserCancel) {
+                    throw UserCancel(str(if (removed) R.string.extract_cancelled else R.string.extract_cancelled_kept, targetName))
+                }
+                throw e
+            }
             message(plural(R.plurals.msg_extracted, fileCount, targetName, fileCount, formatBytes(total)), isError = false)
         }
     }

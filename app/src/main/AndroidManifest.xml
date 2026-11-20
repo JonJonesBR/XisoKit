@@ -25,6 +25,16 @@
                 <data android:scheme="content" />
                 <data android:mimeType="application/x-iso9660-image" />
             </intent-filter>
+            <!-- Alguns gerenciadores entregam .iso como binário genérico. O pathPattern
+                 evita que o app apareça para qualquer arquivo sem tipo definido. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="content"
+                    android:mimeType="application/octet-stream"
+                    android:pathPattern=".*\\.iso" />
+            </intent-filter>
         </activity>
     </application>
 </manifest>

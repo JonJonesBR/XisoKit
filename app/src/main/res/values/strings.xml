@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">XisoKit</string>
     <string name="app_subtitle">Xbox disc images</string>
     <string name="language">Language</string>
@@ -71,7 +71,8 @@
     </plurals>
     <string name="show_warnings">Show warnings</string>
     <string name="hide_warnings">Hide warnings</string>
-    <string name="and_more">…and %1$d more.</string>
+    <!-- Only shown when there are more than 8 problems; the singular never appears. -->
+    <string name="and_more" tools:ignore="PluralsCandidate">…and %1$d more.</string>
     <string name="cannot_build">The XISO cannot be created:</string>
     <string name="job_progress">%1$d%% · %2$s of %3$s</string>
     <string name="job_speed">%1$s/s · %2$s left</string>
@@ -122,7 +123,8 @@
         <item quantity="one">Extracted to the folder “%1$s”: %2$d file (%3$s).</item>
         <item quantity="other">Extracted to the folder “%1$s”: %2$d files (%3$s).</item>
     </plurals>
-    <string name="extract_cancelled">Extraction cancelled. The folder “%1$s” is incomplete; delete it.</string>
+    <string name="extract_cancelled">Extraction cancelled. The partial folder “%1$s” was deleted.</string>
+    <string name="extract_cancelled_kept">Extraction cancelled. The partial folder “%1$s” could not be deleted.</string>
     <string name="verify_cancelled">Verification cancelled.</string>
     <string name="op_cancelled">Operation cancelled.</string>
     <plurals name="verify_ok">

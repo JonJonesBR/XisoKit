@@ -13,8 +13,8 @@ android {
         applicationId = "io.github.jonjonesbr.xisokit"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.3.0"
+        versionCode = 7
+        versionName = "1.3.1"
     }
 
     // A chave de assinatura NUNCA fica no repositório. No GitHub ela vem dos Secrets;
@@ -55,6 +55,7 @@ android {
     lint {
         abortOnError = true
         checkReleaseBuilds = false
+        // O AGP 9 já gera o relatório em texto; o CI o imprime no log.
     }
 }
 

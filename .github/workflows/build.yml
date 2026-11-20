@@ -41,6 +41,11 @@ jobs:
       - name: Lint
         run: ./gradlew --no-daemon :app:lintDebug
 
+      # Mesmo se o lint falhar, mostra os avisos no log.
+      - name: Mostrar avisos do lint
+        if: always()
+        run: cat app/build/reports/lint-results-debug.txt || true
+
       # A chave vem dos Secrets do repositório e só existe durante este build.
       - name: Preparar chave de assinatura
         if: github.event_name != 'pull_request'

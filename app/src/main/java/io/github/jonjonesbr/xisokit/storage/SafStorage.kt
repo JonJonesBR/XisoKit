@@ -131,12 +131,12 @@ class SafStorage(private val resolver: ContentResolver) {
         null
     }
 
-    fun delete(uri: Uri) {
-        try {
-            DocumentsContract.deleteDocument(resolver, uri)
-        } catch (e: Exception) {
-            // Sem permissão para apagar: o arquivo incompleto fica, e a mensagem de erro avisa.
-        }
+    /** Apaga um documento (ou uma pasta, com o conteúdo). False se o provedor não permitir. */
+    fun delete(uri: Uri): Boolean = try {
+        DocumentsContract.deleteDocument(resolver, uri)
+    } catch (e: Exception) {
+        // Sem permissão para apagar: quem chamou decide o que avisar.
+        false
     }
 
     fun treeRoot(treeUri: Uri): Uri =
