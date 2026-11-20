@@ -5,4 +5,9 @@
     <issue id="AndroidGradlePluginVersion">
         <ignore path="gradle/wrapper/gradle-wrapper.properties" />
     </issue>
+    <!-- targetSdk 36 é intencional: o 37 muda comportamentos e precisa de teste em
+         aparelho antes. Voltar a subir assim que essa validação for feita. -->
+    <issue id="OldTargetApi">
+        <ignore path="app/build.gradle.kts" />
+    </issue>
 </lint>

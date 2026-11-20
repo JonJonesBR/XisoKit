@@ -55,3 +55,7 @@ Precisa de JDK 17 e do Android SDK (compileSdk 37.1).
 ./gradlew :app:testDebugUnitTest   # testes do núcleo XISO
 ./gradlew :app:assembleDebug      # APK em app/build/outputs/apk/debug/
 ```
+
+## Licença
+
+MIT. Veja [LICENSE](LICENSE).

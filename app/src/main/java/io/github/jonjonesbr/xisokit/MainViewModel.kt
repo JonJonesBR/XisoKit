@@ -116,7 +116,6 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     override fun onCleared() {
         // A escrita continua em segundo plano mesmo quando a tela é fechada; isto a interrompe.
         cancelRequested = true
-        super.onCleared()
     }
 
     fun dismissMessage() = _state.update { it.copy(message = null) }

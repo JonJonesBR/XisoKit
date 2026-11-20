@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- O app não guarda dados do usuário; allowBackup=false basta, sem regras de extração. -->
+    <!-- O app não guarda dados do usuário; allowBackup=false basta, sem regras de extração.
+         localeConfig é ignorado pelas versões antigas de propósito (só existe no Android 13+). -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -11,7 +12,7 @@
         android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.XisoKit"
-        tools:ignore="DataExtractionRules">
+        tools:ignore="DataExtractionRules,UnusedAttribute">
 
         <activity
             android:name=".MainActivity"
